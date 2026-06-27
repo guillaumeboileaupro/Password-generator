@@ -8,6 +8,8 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <memory>
+#include <thread>
 
 using namespace std;
 
@@ -25,6 +27,9 @@ GtkWidget* language_combo;
 GtkWidget* options_label;
 GtkWidget* generate_button;
 GtkWidget* copy_button;
+GtkWidget* recording_box;
+GtkWidget* recording_spinner;
+GtkWidget* recording_label;
 
 struct UiText {
     const char* app_name;
@@ -153,7 +158,7 @@ void apply_ui_text() {
     gtk_combo_box_set_active(GTK_COMBO_BOX(language_combo), g_is_french ? 0 : 1);
     g_signal_handlers_unblock_by_func(language_combo, reinterpret_cast<gpointer>(on_language_changed), NULL);
 
-    gtk_label_set_text(GTK_LABEL(status_label), g_text.ready_label);
+    gtk_label_set_text(GTK_LABEL(recording_label), g_text.capturing_label);
 }
 
 void on_language_changed(GtkComboBox* combo, gpointer) {
@@ -223,13 +228,70 @@ vector<unsigned char> capture_microphone_noise(unsigned int seconds = 2) {
     );
 }
 
-void on_generate_clicked(GtkWidget*, gpointer) {
-    gtk_label_set_text(
-        GTK_LABEL(status_label),
-        g_text.capturing_label
-    );
-    while (gtk_events_pending()) gtk_main_iteration();
+struct GenerationRequest {
+    int length;
+    PasswordOptions options;
+};
 
+struct GenerationResult {
+    bool success;
+    string password;
+    string message;
+};
+
+void set_recording_ui(bool is_recording) {
+    gtk_widget_set_sensitive(generate_button, !is_recording);
+    gtk_widget_set_sensitive(copy_button, !is_recording);
+    gtk_widget_set_sensitive(length_entry, !is_recording);
+    gtk_widget_set_sensitive(lower_check, !is_recording);
+    gtk_widget_set_sensitive(upper_check, !is_recording);
+    gtk_widget_set_sensitive(digits_check, !is_recording);
+    gtk_widget_set_sensitive(symbols_check, !is_recording);
+    gtk_widget_set_sensitive(language_combo, !is_recording);
+
+    if (is_recording) {
+        gtk_widget_show_all(recording_box);
+        gtk_spinner_start(GTK_SPINNER(recording_spinner));
+    } else {
+        gtk_spinner_stop(GTK_SPINNER(recording_spinner));
+        gtk_widget_hide(recording_box);
+    }
+}
+
+gboolean finish_generation_on_ui_thread(gpointer data) {
+    unique_ptr<GenerationResult> result(static_cast<GenerationResult*>(data));
+
+    set_recording_ui(false);
+
+    if (result->success) {
+        gtk_entry_set_text(GTK_ENTRY(result_entry), result->password.c_str());
+    }
+
+    gtk_label_set_text(GTK_LABEL(status_label), result->message.c_str());
+
+    return FALSE;
+}
+
+void run_generation_worker(GenerationRequest request) {
+    auto result = make_unique<GenerationResult>();
+
+    try {
+        const vector<unsigned char> microphone_noise = capture_microphone_noise(2);
+        const vector<unsigned char> seed = sha256_bytes(microphone_noise);
+
+        result->password = generate_password_from_seed(request.length, request.options, seed);
+        result->message = g_text.generated_label;
+        result->success = true;
+    } catch (const exception& e) {
+        result->password = "";
+        result->message = e.what();
+        result->success = false;
+    }
+
+    g_idle_add(finish_generation_on_ui_thread, result.release());
+}
+
+void on_generate_clicked(GtkWidget*, gpointer) {
     try {
         const char* length_text = gtk_entry_get_text(GTK_ENTRY(length_entry));
         int length = stoi(length_text);
@@ -248,12 +310,13 @@ void on_generate_clicked(GtkWidget*, gpointer) {
             gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(symbols_check)) != 0
         };
 
-        const vector<unsigned char> microphone_noise = capture_microphone_noise(2);
-        const vector<unsigned char> seed = sha256_bytes(microphone_noise);
-        const string password = generate_password_from_seed(length, options, seed);
+        gtk_label_set_text(GTK_LABEL(status_label), g_text.capturing_label);
+        gtk_label_set_text(GTK_LABEL(recording_label), g_text.capturing_label);
 
-        gtk_entry_set_text(GTK_ENTRY(result_entry), password.c_str());
-        gtk_label_set_text(GTK_LABEL(status_label), g_text.generated_label);
+        set_recording_ui(true);
+
+        GenerationRequest request{length, options};
+        thread(run_generation_worker, request).detach();
 
     } catch (const exception& e) {
         gtk_label_set_text(GTK_LABEL(status_label), e.what());
@@ -335,6 +398,18 @@ int main(int argc, char* argv[]) {
 
     generate_button = gtk_button_new_with_label("");
     gtk_box_pack_start(GTK_BOX(box), generate_button, FALSE, FALSE, 10);
+
+    recording_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
+    gtk_widget_set_no_show_all(recording_box, TRUE);
+
+    recording_spinner = gtk_spinner_new();
+    gtk_box_pack_start(GTK_BOX(recording_box), recording_spinner, FALSE, FALSE, 0);
+
+    recording_label = gtk_label_new("");
+    gtk_label_set_xalign(GTK_LABEL(recording_label), 0.0f);
+    gtk_box_pack_start(GTK_BOX(recording_box), recording_label, FALSE, FALSE, 0);
+
+    gtk_box_pack_start(GTK_BOX(box), recording_box, FALSE, FALSE, 5);
 
     result_entry = gtk_entry_new();
     gtk_editable_set_editable(GTK_EDITABLE(result_entry), FALSE);
