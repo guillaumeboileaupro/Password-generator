@@ -14,5 +14,9 @@
 - [x] Add automated tests and measure coverage
 - [x] Target around 95% coverage on the non-UI logic
 - [ ] Launch and validate the GTK UI manually on Ubuntu
-- [ ] Split the work into several clean commits
+- [x] Split the work into several clean commits
 - [ ] Open a PR once the code and tests are stable
+
+## Blockers
+
+- [ ] Install and authenticate `gh` to open the PR from this environment
