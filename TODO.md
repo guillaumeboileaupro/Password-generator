@@ -19,4 +19,4 @@
 ## Blockers
 
 - [ ] Open the PR from an environment with a working GitHub CLI or integration token
-- [ ] Install and authenticate `gh` to open the PR from this environment
+- [ ] Authenticate `gh` to open the PR from this environment
