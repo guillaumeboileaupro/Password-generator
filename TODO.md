@@ -15,8 +15,3 @@
 - [x] Target around 95% coverage on the non-UI logic
 - [x] Launch and validate the GTK UI manually on Ubuntu
 - [x] Split the work into several clean commits
-
-## Blockers
-
-- [ ] Open the PR from an environment with a working GitHub CLI or integration token
-- [ ] Install and authenticate `gh` to open the PR from this environment
