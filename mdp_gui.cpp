@@ -31,7 +31,7 @@ vector<unsigned char> capture_microphone_noise(unsigned int seconds = 2) {
 
     int err = snd_pcm_open(&handle, device, SND_PCM_STREAM_CAPTURE, 0);
     if (err < 0) {
-        throw runtime_error("Impossible d'ouvrir le microphone.");
+        throw runtime_error("Unable to open the microphone.");
     }
 
     err = snd_pcm_set_params(
@@ -46,7 +46,7 @@ vector<unsigned char> capture_microphone_noise(unsigned int seconds = 2) {
 
     if (err < 0) {
         snd_pcm_close(handle);
-        throw runtime_error("Impossible de configurer le microphone.");
+        throw runtime_error("Unable to configure the microphone.");
     }
 
     size_t total_samples = sample_rate * seconds;
@@ -67,7 +67,7 @@ vector<unsigned char> capture_microphone_noise(unsigned int seconds = 2) {
 
         if (frames < 0) {
             snd_pcm_close(handle);
-            throw runtime_error("Erreur pendant la capture du microphone.");
+            throw runtime_error("Error while capturing microphone noise.");
         }
 
         samples_read += frames;
@@ -84,7 +84,7 @@ vector<unsigned char> capture_microphone_noise(unsigned int seconds = 2) {
 void on_generate_clicked(GtkWidget*, gpointer) {
     gtk_label_set_text(
         GTK_LABEL(status_label),
-        "Capture du bruit du microphone pendant 2 secondes..."
+        "Capturing microphone noise for 2 seconds..."
     );
     while (gtk_events_pending()) gtk_main_iteration();
 
@@ -93,10 +93,10 @@ void on_generate_clicked(GtkWidget*, gpointer) {
         int length = stoi(length_text);
 
         if (length <= 0) {
-            throw runtime_error("La longueur doit etre positive.");
+            throw runtime_error("Password length must be positive.");
         }
         if (length > static_cast<int>(kMaxPasswordLength)) {
-            throw runtime_error("La longueur maximale est 1024.");
+            throw runtime_error("Maximum password length is 1024.");
         }
 
         const PasswordOptions options{
@@ -111,7 +111,7 @@ void on_generate_clicked(GtkWidget*, gpointer) {
         const string password = generate_password_from_seed(length, options, seed);
 
         gtk_entry_set_text(GTK_ENTRY(result_entry), password.c_str());
-        gtk_label_set_text(GTK_LABEL(status_label), "Mot de passe genere a partir du bruit du microphone.");
+        gtk_label_set_text(GTK_LABEL(status_label), "Password generated from microphone noise.");
 
     } catch (const exception& e) {
         gtk_label_set_text(GTK_LABEL(status_label), e.what());
@@ -121,28 +121,28 @@ void on_generate_clicked(GtkWidget*, gpointer) {
 void on_copy_clicked(GtkWidget*, gpointer) {
     const char* password = gtk_entry_get_text(GTK_ENTRY(result_entry));
     if (password == nullptr || password[0] == '\0') {
-        gtk_label_set_text(GTK_LABEL(status_label), "Aucun mot de passe a copier.");
+        gtk_label_set_text(GTK_LABEL(status_label), "No password to copy.");
         return;
     }
 
     GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
     gtk_clipboard_set_text(clipboard, password, -1);
 
-    gtk_label_set_text(GTK_LABEL(status_label), "Mot de passe copie dans le presse-papiers.");
+    gtk_label_set_text(GTK_LABEL(status_label), "Password copied to clipboard.");
 }
 
 int main(int argc, char* argv[]) {
     gtk_init(&argc, &argv);
 
     g_set_prgname("mdp-generator");
-    g_set_application_name("Generateur de mots de passe");
+    g_set_application_name("Password Generator");
 
     if (g_file_test(kLocalIconPath, G_FILE_TEST_EXISTS)) {
         gtk_window_set_default_icon_from_file(kLocalIconPath, nullptr);
     }
 
     GtkWidget* window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(window), "Generateur de mots de passe");
+    gtk_window_set_title(GTK_WINDOW(window), "Password Generator");
     gtk_window_set_default_size(GTK_WINDOW(window), 520, 320);
     gtk_container_set_border_width(GTK_CONTAINER(window), 15);
 
@@ -155,7 +155,7 @@ int main(int argc, char* argv[]) {
     GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_container_add(GTK_CONTAINER(window), box);
 
-    GtkWidget* title = gtk_label_new("Generateur de mots de passe");
+    GtkWidget* title = gtk_label_new("Password Generator");
     gtk_label_set_xalign(GTK_LABEL(title), 0.0f);
     gtk_box_pack_start(GTK_BOX(box), title, FALSE, FALSE, 5);
 
@@ -163,18 +163,18 @@ int main(int argc, char* argv[]) {
     gtk_entry_set_text(GTK_ENTRY(length_entry), "32");
     gtk_entry_set_placeholder_text(
         GTK_ENTRY(length_entry),
-        "Longueur du mot de passe"
+        "Password length"
     );
     gtk_box_pack_start(GTK_BOX(box), length_entry, FALSE, FALSE, 5);
 
-    GtkWidget* options_label = gtk_label_new("Types de caracteres");
+    GtkWidget* options_label = gtk_label_new("Character types");
     gtk_label_set_xalign(GTK_LABEL(options_label), 0.0f);
     gtk_box_pack_start(GTK_BOX(box), options_label, FALSE, FALSE, 0);
 
-    lower_check = gtk_check_button_new_with_label("Minuscules a-z");
-    upper_check = gtk_check_button_new_with_label("Majuscules A-Z");
-    digits_check = gtk_check_button_new_with_label("Chiffres 0-9");
-    symbols_check = gtk_check_button_new_with_label("Symboles");
+    lower_check = gtk_check_button_new_with_label("Lowercase a-z");
+    upper_check = gtk_check_button_new_with_label("Uppercase A-Z");
+    digits_check = gtk_check_button_new_with_label("Digits 0-9");
+    symbols_check = gtk_check_button_new_with_label("Symbols");
 
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lower_check), TRUE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(upper_check), TRUE);
@@ -186,21 +186,21 @@ int main(int argc, char* argv[]) {
     gtk_box_pack_start(GTK_BOX(box), digits_check, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(box), symbols_check, FALSE, FALSE, 0);
 
-    GtkWidget* generate_button = gtk_button_new_with_label("Generer");
+    GtkWidget* generate_button = gtk_button_new_with_label("Generate");
     gtk_box_pack_start(GTK_BOX(box), generate_button, FALSE, FALSE, 10);
 
     result_entry = gtk_entry_new();
     gtk_editable_set_editable(GTK_EDITABLE(result_entry), FALSE);
     gtk_entry_set_placeholder_text(
         GTK_ENTRY(result_entry),
-        "Le mot de passe apparaitra ici"
+        "Generated password"
     );
     gtk_box_pack_start(GTK_BOX(box), result_entry, FALSE, FALSE, 5);
 
-    GtkWidget* copy_button = gtk_button_new_with_label("Copier");
+    GtkWidget* copy_button = gtk_button_new_with_label("Copy");
     gtk_box_pack_start(GTK_BOX(box), copy_button, FALSE, FALSE, 5);
 
-    status_label = gtk_label_new("Pret");
+    status_label = gtk_label_new("Ready");
     gtk_label_set_line_wrap(GTK_LABEL(status_label), TRUE);
     gtk_label_set_xalign(GTK_LABEL(status_label), 0.0f);
     gtk_box_pack_start(GTK_BOX(box), status_label, FALSE, FALSE, 5);
