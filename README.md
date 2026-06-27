@@ -116,6 +116,8 @@ GitHub publication:
 
 - every push and pull request can build the `.deb` in GitHub Actions
 - every tag like `v0.1.0` can publish the `.deb` as a GitHub Release asset
+- every push and pull request can also build the `.snap` in GitHub Actions
+- every tag like `v0.1.0` can also publish the `.snap` as a GitHub Release asset
 
 ### Ubuntu Software / App Center
 
@@ -314,6 +316,8 @@ Publication sur GitHub :
 
 - chaque push et pull request peut construire le `.deb` dans GitHub Actions
 - chaque tag du type `v0.1.0` peut publier le `.deb` dans les assets d'une GitHub Release
+- chaque push et pull request peut aussi construire le `.snap` dans GitHub Actions
+- chaque tag du type `v0.1.0` peut aussi publier le `.snap` dans les assets d'une GitHub Release
 
 ### Ubuntu Software / App Center
 
