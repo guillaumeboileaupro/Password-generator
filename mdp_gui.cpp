@@ -134,9 +134,16 @@ void on_copy_clicked(GtkWidget*, gpointer) {
 int main(int argc, char* argv[]) {
     gtk_init(&argc, &argv);
 
+    g_set_prgname("mdp-generator");
+    g_set_application_name("Generateur de mots de passe");
+
+    if (g_file_test(kLocalIconPath, G_FILE_TEST_EXISTS)) {
+        gtk_window_set_default_icon_from_file(kLocalIconPath, nullptr);
+    }
+
     GtkWidget* window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window), "Generateur de mots de passe");
-    gtk_window_set_default_size(GTK_WINDOW(window), 560, 420);
+    gtk_window_set_default_size(GTK_WINDOW(window), 520, 320);
     gtk_container_set_border_width(GTK_CONTAINER(window), 15);
 
     if (g_file_test(kLocalIconPath, G_FILE_TEST_EXISTS)) {
@@ -148,15 +155,9 @@ int main(int argc, char* argv[]) {
     GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_container_add(GTK_CONTAINER(window), box);
 
-    GtkWidget* title = gtk_label_new("Generateur de mots de passe base sur le bruit du microphone");
+    GtkWidget* title = gtk_label_new("Generateur de mots de passe");
+    gtk_label_set_xalign(GTK_LABEL(title), 0.0f);
     gtk_box_pack_start(GTK_BOX(box), title, FALSE, FALSE, 5);
-
-    GtkWidget* intro = gtk_label_new(
-        "Choisissez la longueur et les types de caracteres. Le logiciel capture 2 secondes de bruit micro, calcule un hash SHA-256 puis derive un flux pseudo-aleatoire sans biais modulo."
-    );
-    gtk_label_set_line_wrap(GTK_LABEL(intro), TRUE);
-    gtk_label_set_xalign(GTK_LABEL(intro), 0.0f);
-    gtk_box_pack_start(GTK_BOX(box), intro, FALSE, FALSE, 5);
 
     length_entry = gtk_entry_new();
     gtk_entry_set_text(GTK_ENTRY(length_entry), "32");
@@ -199,7 +200,7 @@ int main(int argc, char* argv[]) {
     GtkWidget* copy_button = gtk_button_new_with_label("Copier");
     gtk_box_pack_start(GTK_BOX(box), copy_button, FALSE, FALSE, 5);
 
-    status_label = gtk_label_new("Pret.");
+    status_label = gtk_label_new("Pret");
     gtk_label_set_line_wrap(GTK_LABEL(status_label), TRUE);
     gtk_label_set_xalign(GTK_LABEL(status_label), 0.0f);
     gtk_box_pack_start(GTK_BOX(box), status_label, FALSE, FALSE, 5);
