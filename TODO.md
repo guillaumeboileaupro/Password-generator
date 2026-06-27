@@ -1,0 +1,18 @@
+# TODO
+
+## Done
+
+- [x] Rename the executable target to `mdp-generator`
+- [x] Update the desktop launcher to use `Exec=mdp-generator`
+- [x] Keep `mdp-logo.png` as the application icon
+- [x] Add an `install.sh` helper script
+- [x] Refresh the README so it matches the current command name and installation flow
+
+## Next
+
+- [x] Rework the random generation flow so microphone noise is the primary entropy source
+- [x] Add automated tests and measure coverage
+- [x] Target around 95% coverage on the non-UI logic
+- [ ] Launch and validate the GTK UI manually on Ubuntu
+- [ ] Split the work into several clean commits
+- [ ] Open a PR once the code and tests are stable
