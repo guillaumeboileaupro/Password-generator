@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Password Generator
+Name[fr]=Générateur de mots de passe
+Comment=Microphone-based password generator
+Comment[fr]=Generateur de mots de passe base sur le microphone
+Exec=mdp-generator
+Icon=${SNAP}/meta/gui/mdp-logo.png
+Terminal=false
+Type=Application
+Categories=Utility;Security;

@@ -4,3 +4,4 @@ password-core-tests
 *.gcda
 *.gcno
 *.gcov
+dist/

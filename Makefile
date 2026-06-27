@@ -15,7 +15,7 @@ APP_CXXFLAGS += $(GTK_CFLAGS)
 APP_LDFLAGS += $(GTK_LIBS) -lasound $(CORE_LIBS)
 TEST_LDFLAGS += $(CORE_LIBS)
 
-.PHONY: all test coverage install clean
+.PHONY: all test coverage install clean deb snap
 
 all: $(APP)
 
@@ -45,3 +45,9 @@ install: all
 
 clean:
 	rm -f $(APP) $(TEST_APP) *.gcda *.gcno *.gcov *-*.gcda *-*.gcno *-*.gcov tests/*.gcda tests/*.gcno tests/*.gcov
+
+deb: all
+	./build_deb.sh
+
+snap:
+	snapcraft

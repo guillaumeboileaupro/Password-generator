@@ -77,7 +77,7 @@ make coverage
 System-wide install with the default prefix:
 
 ```bash
-sudo make install
+sudo make install PREFIX=/usr
 ```
 
 Or with the helper script:
@@ -92,10 +92,95 @@ Package-friendly or staged install:
 make install DESTDIR=/tmp/package-root PREFIX=/usr
 ```
 
+### Debian package
+
+Build a `.deb` package:
+
+```bash
+make deb
+```
+
+This creates a package in `dist/`, for example:
+
+```bash
+dist/mdp-generator_0.1.0_amd64.deb
+```
+
+Install it with:
+
+```bash
+sudo dpkg -i dist/mdp-generator_0.1.0_amd64.deb
+```
+
+GitHub publication:
+
+- every push and pull request can build the `.deb` in GitHub Actions
+- every tag like `v0.1.0` can publish the `.deb` as a GitHub Release asset
+- every push and pull request can also build the `.snap` in GitHub Actions
+- every tag like `v0.1.0` can also publish the `.snap` as a GitHub Release asset
+
+### Ubuntu Software / App Center
+
+If you want the application to appear in Ubuntu Software for everyone, the practical distribution format is a Snap package.
+
+This repository now includes Snap packaging files in `snap/` and a `make snap` target.
+
+Build the Snap locally:
+
+```bash
+make snap
+```
+
+Important notes:
+
+- a `.deb` published on GitHub is useful for direct download, but it does not automatically appear in Ubuntu Software
+- Ubuntu Software public distribution requires publication to the Snap Store
+- because this application records microphone noise, the Snap declares the `audio-record` permission
+- final public publication still requires a Snapcraft account and a manual store upload/review step
+
+Typical publication flow:
+
+```bash
+snapcraft login
+make snap
+snapcraft upload --release=stable *.snap
+```
+
+### Reinstall after changes
+
+If you modify the source code, the desktop launcher, or `mdp-logo.png`, you should reinstall the application before expecting the system menu or icon cache to reflect the update.
+
+Typical cases where reinstall is required:
+
+- the binary changed and you want the global `mdp-generator` command to use the new build
+- the desktop file changed and you want the application launcher to be refreshed
+- the icon changed and you want Ubuntu to pick up the new logo
+
+Recommended command:
+
+```bash
+sudo ./install.sh
+```
+
+What this script does:
+
+- installs the binary into `/usr/bin/mdp-generator`
+- installs the desktop file into `/usr/share/applications/mdp-generator.desktop`
+- installs the icon into `/usr/share/icons/hicolor/256x256/apps/mdp-logo.png`
+- removes the old legacy copy from `/usr/local` if it exists
+- refreshes the desktop and icon caches
+
+If Ubuntu still shows the old icon after reinstall:
+
+- close and reopen the application
+- run `hash -r` in the shell before relaunching from terminal
+- if the desktop shell still keeps the old icon cached, log out and log back in
+
 ### Installed files
 
-- binary: `/usr/local/bin/mdp-generator` by default
-- desktop entry: `/usr/local/share/applications/mdp-generator.desktop` by default
+- binary: `/usr/bin/mdp-generator` by default through `install.sh`
+- desktop entry: `/usr/share/applications/mdp-generator.desktop` by default through `install.sh`
+- icon: `/usr/share/icons/hicolor/256x256/apps/mdp-logo.png`
 
 ### User interface
 
@@ -192,7 +277,7 @@ make coverage
 Installation systeme avec le prefixe par defaut :
 
 ```bash
-sudo make install
+sudo make install PREFIX=/usr
 ```
 
 Ou avec le script d'installation :
@@ -207,10 +292,95 @@ Installation preparee pour empaquetage ou destination temporaire :
 make install DESTDIR=/tmp/package-root PREFIX=/usr
 ```
 
+### Paquet Debian
+
+Construire un paquet `.deb` :
+
+```bash
+make deb
+```
+
+Cela cree un paquet dans `dist/`, par exemple :
+
+```bash
+dist/mdp-generator_0.1.0_amd64.deb
+```
+
+Installation :
+
+```bash
+sudo dpkg -i dist/mdp-generator_0.1.0_amd64.deb
+```
+
+Publication sur GitHub :
+
+- chaque push et pull request peut construire le `.deb` dans GitHub Actions
+- chaque tag du type `v0.1.0` peut publier le `.deb` dans les assets d'une GitHub Release
+- chaque push et pull request peut aussi construire le `.snap` dans GitHub Actions
+- chaque tag du type `v0.1.0` peut aussi publier le `.snap` dans les assets d'une GitHub Release
+
+### Ubuntu Software / App Center
+
+Si tu veux que l'application apparaisse dans Ubuntu Software pour tout le monde, le format de distribution le plus adapte est un paquet Snap.
+
+Le depot contient maintenant les fichiers d'empaquetage Snap dans `snap/` et une cible `make snap`.
+
+Construire le Snap en local :
+
+```bash
+make snap
+```
+
+Points importants :
+
+- un `.deb` publie sur GitHub est pratique pour le telechargement direct, mais il n'apparait pas automatiquement dans Ubuntu Software
+- la distribution publique dans Ubuntu Software demande une publication dans le Snap Store
+- comme l'application enregistre du bruit micro, le Snap declare la permission `audio-record`
+- la publication publique finale demande quand meme un compte Snapcraft et une etape manuelle d'upload et de validation
+
+Flux de publication typique :
+
+```bash
+snapcraft login
+make snap
+snapcraft upload --release=stable *.snap
+```
+
+### Reinstaller apres modification
+
+Si tu modifies le code source, le lanceur desktop, ou `mdp-logo.png`, il faut reinstaller l'application avant d'attendre que le menu systeme ou le cache d'icones prenne en compte la mise a jour.
+
+Cas typiques ou la reinstallation est necessaire :
+
+- le binaire a change et tu veux que la commande globale `mdp-generator` utilise la nouvelle version
+- le fichier desktop a change et tu veux rafraichir le lanceur
+- l'icone a change et tu veux qu'Ubuntu prenne le nouveau logo
+
+Commande recommandee :
+
+```bash
+sudo ./install.sh
+```
+
+Ce que fait ce script :
+
+- installe le binaire dans `/usr/bin/mdp-generator`
+- installe le fichier desktop dans `/usr/share/applications/mdp-generator.desktop`
+- installe l'icone dans `/usr/share/icons/hicolor/256x256/apps/mdp-logo.png`
+- supprime l'ancienne copie legacy dans `/usr/local` si elle existe
+- rafraichit les caches desktop et icones
+
+Si Ubuntu affiche encore l'ancienne icone apres reinstallation :
+
+- ferme puis relance l'application
+- execute `hash -r` dans le shell avant de relancer depuis le terminal
+- si le shell graphique garde encore l'ancienne icone en cache, deconnecte-toi puis reconnecte-toi
+
 ### Fichiers installes
 
-- binaire : `/usr/local/bin/mdp-generator` par defaut
-- entree desktop : `/usr/local/share/applications/mdp-generator.desktop` par defaut
+- binaire : `/usr/bin/mdp-generator` par defaut via `install.sh`
+- entree desktop : `/usr/share/applications/mdp-generator.desktop` par defaut via `install.sh`
+- icone : `/usr/share/icons/hicolor/256x256/apps/mdp-logo.png`
 
 ### Interface utilisateur
 
