@@ -1,0 +1,6 @@
+mdp-generator
+mdp-gui
+password-core-tests
+*.gcda
+*.gcno
+*.gcov
