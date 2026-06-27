@@ -15,7 +15,7 @@ APP_CXXFLAGS += $(GTK_CFLAGS)
 APP_LDFLAGS += $(GTK_LIBS) -lasound $(CORE_LIBS)
 TEST_LDFLAGS += $(CORE_LIBS)
 
-.PHONY: all test coverage install clean deb
+.PHONY: all test coverage install clean deb snap
 
 all: $(APP)
 
@@ -48,3 +48,6 @@ clean:
 
 deb: all
 	./build_deb.sh
+
+snap:
+	snapcraft

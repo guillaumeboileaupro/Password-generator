@@ -117,6 +117,33 @@ GitHub publication:
 - every push and pull request can build the `.deb` in GitHub Actions
 - every tag like `v0.1.0` can publish the `.deb` as a GitHub Release asset
 
+### Ubuntu Software / App Center
+
+If you want the application to appear in Ubuntu Software for everyone, the practical distribution format is a Snap package.
+
+This repository now includes Snap packaging files in `snap/` and a `make snap` target.
+
+Build the Snap locally:
+
+```bash
+make snap
+```
+
+Important notes:
+
+- a `.deb` published on GitHub is useful for direct download, but it does not automatically appear in Ubuntu Software
+- Ubuntu Software public distribution requires publication to the Snap Store
+- because this application records microphone noise, the Snap declares the `audio-record` permission
+- final public publication still requires a Snapcraft account and a manual store upload/review step
+
+Typical publication flow:
+
+```bash
+snapcraft login
+make snap
+snapcraft upload --release=stable *.snap
+```
+
 ### Reinstall after changes
 
 If you modify the source code, the desktop launcher, or `mdp-logo.png`, you should reinstall the application before expecting the system menu or icon cache to reflect the update.
@@ -287,6 +314,33 @@ Publication sur GitHub :
 
 - chaque push et pull request peut construire le `.deb` dans GitHub Actions
 - chaque tag du type `v0.1.0` peut publier le `.deb` dans les assets d'une GitHub Release
+
+### Ubuntu Software / App Center
+
+Si tu veux que l'application apparaisse dans Ubuntu Software pour tout le monde, le format de distribution le plus adapte est un paquet Snap.
+
+Le depot contient maintenant les fichiers d'empaquetage Snap dans `snap/` et une cible `make snap`.
+
+Construire le Snap en local :
+
+```bash
+make snap
+```
+
+Points importants :
+
+- un `.deb` publie sur GitHub est pratique pour le telechargement direct, mais il n'apparait pas automatiquement dans Ubuntu Software
+- la distribution publique dans Ubuntu Software demande une publication dans le Snap Store
+- comme l'application enregistre du bruit micro, le Snap declare la permission `audio-record`
+- la publication publique finale demande quand meme un compte Snapcraft et une etape manuelle d'upload et de validation
+
+Flux de publication typique :
+
+```bash
+snapcraft login
+make snap
+snapcraft upload --release=stable *.snap
+```
 
 ### Reinstaller apres modification
 
