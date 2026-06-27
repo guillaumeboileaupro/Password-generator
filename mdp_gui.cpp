@@ -59,6 +59,8 @@ const char* kLocalIconPath = "mdp-logo.png";
 UiText g_text;
 bool g_is_french = false;
 
+void on_language_changed(GtkComboBox* combo, gpointer);
+
 UiText english_text() {
     return {
         "Password Generator",
@@ -144,10 +146,12 @@ void apply_ui_text() {
     gtk_entry_set_placeholder_text(GTK_ENTRY(length_entry), g_text.length_placeholder);
     gtk_entry_set_placeholder_text(GTK_ENTRY(result_entry), g_text.result_placeholder);
 
+    g_signal_handlers_block_by_func(language_combo, reinterpret_cast<gpointer>(on_language_changed), NULL);
     gtk_combo_box_text_remove_all(GTK_COMBO_BOX_TEXT(language_combo));
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(language_combo), g_text.language_french);
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(language_combo), g_text.language_english);
     gtk_combo_box_set_active(GTK_COMBO_BOX(language_combo), g_is_french ? 0 : 1);
+    g_signal_handlers_unblock_by_func(language_combo, reinterpret_cast<gpointer>(on_language_changed), NULL);
 
     gtk_label_set_text(GTK_LABEL(status_label), g_text.ready_label);
 }
