@@ -69,6 +69,13 @@ void test_derive_stream_is_stable() {
     expect(equal(short_stream.begin(), short_stream.end(), long_stream.begin()), "derive_stream prefix must be stable");
 }
 
+void test_derive_stream_accepts_zero_length() {
+    const vector<unsigned char> seed = {1, 2, 3, 4};
+    const vector<unsigned char> stream = derive_stream(seed, 0);
+
+    expect(stream.empty(), "derive_stream must allow zero-length output");
+}
+
 void test_generate_password_from_seed_with_all_groups() {
     const PasswordOptions options{true, true, true, true};
     const vector<unsigned char> seed = {'m', 'i', 'c', 'r', 'o'};
@@ -97,6 +104,15 @@ void test_generate_password_length_one() {
 
     expect(password.size() == 1, "length-one password mismatch");
     expect(contains_any(password, "abcdefghijklmnopqrstuvwxyz"), "length-one password must stay in charset");
+}
+
+void test_generate_password_is_deterministic() {
+    const PasswordOptions options{true, true, true, true};
+    const vector<unsigned char> seed = {7, 1, 4, 9, 2, 8};
+    const string first = generate_password_from_seed(32, options, seed);
+    const string second = generate_password_from_seed(32, options, seed);
+
+    expect_equal(first, second, "password generation must be deterministic for the same seed");
 }
 
 void test_generate_password_throws_without_charset() {
@@ -137,9 +153,11 @@ void test_generate_password_throws_when_length_is_non_positive() {
 int main() {
     test_sha256_bytes();
     test_derive_stream_is_stable();
+    test_derive_stream_accepts_zero_length();
     test_generate_password_from_seed_with_all_groups();
     test_generate_password_single_charset();
     test_generate_password_length_one();
+    test_generate_password_is_deterministic();
     test_generate_password_throws_without_charset();
     test_generate_password_throws_when_length_is_too_short();
     test_generate_password_throws_when_length_is_non_positive();
