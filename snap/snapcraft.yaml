@@ -26,7 +26,7 @@ apps:
 parts:
   mdp-generator:
     plugin: make
-    source: ..
+    source: .
     make-parameters:
       - PREFIX=/usr
     build-packages:
