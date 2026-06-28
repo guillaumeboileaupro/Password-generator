@@ -66,10 +66,16 @@ Run the non-UI tests:
 make test
 ```
 
-Generate a basic coverage report for the core password logic:
+Generate a coverage report for the core password logic:
 
 ```bash
 make coverage
+```
+
+Enforce a minimum coverage threshold on the tested core logic:
+
+```bash
+make coverage-check COVERAGE_MIN=95
 ```
 
 ### Install
@@ -266,10 +272,16 @@ Lancer les tests non-UI :
 make test
 ```
 
-Generer un rapport de couverture simple pour la logique coeur :
+Generer un rapport de couverture pour la logique coeur :
 
 ```bash
 make coverage
+```
+
+Verifier un seuil minimal de couverture sur la logique testee :
+
+```bash
+make coverage-check COVERAGE_MIN=95
 ```
 
 ### Installation

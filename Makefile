@@ -11,11 +11,12 @@ APP_SOURCES = mdp_gui.cpp password_core.cpp
 TEST_APP = password-core-tests
 TEST_SOURCES = tests/password_core_test.cpp password_core.cpp
 CORE_LIBS = -lssl -lcrypto
+COVERAGE_MIN ?= 95
 APP_CXXFLAGS += $(GTK_CFLAGS)
 APP_LDFLAGS += $(GTK_LIBS) -lasound $(CORE_LIBS)
 TEST_LDFLAGS += $(CORE_LIBS)
 
-.PHONY: all test coverage install clean deb snap
+.PHONY: all test coverage coverage-check install clean deb snap
 
 all: $(APP)
 
@@ -33,7 +34,14 @@ coverage: APP_CXXFLAGS += --coverage
 coverage: TEST_LDFLAGS += --coverage
 coverage: clean $(TEST_APP)
 	./$(TEST_APP)
-	gcov password-core-tests-password_core.gcno
+	bash scripts/coverage_report.sh
+
+coverage-check: CPPFLAGS += --coverage
+coverage-check: APP_CXXFLAGS += --coverage
+coverage-check: TEST_LDFLAGS += --coverage
+coverage-check: clean $(TEST_APP)
+	./$(TEST_APP)
+	bash scripts/coverage_report.sh $(COVERAGE_MIN)
 
 install: all
 	install -d $(DESTDIR)$(BINDIR)
