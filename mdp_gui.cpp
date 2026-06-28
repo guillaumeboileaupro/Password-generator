@@ -31,6 +31,8 @@ GtkWidget* recording_box;
 GtkWidget* recording_spinner;
 GtkWidget* recording_label;
 
+vector<unsigned char> capture_microphone_noise(unsigned int seconds = 2);
+
 struct UiText {
     const char* app_name;
     const char* window_title;
@@ -63,6 +65,8 @@ const size_t kMaxPasswordLength = 1024;
 const char* kLocalIconPath = "mdp-logo.png";
 UiText g_text;
 bool g_is_french = false;
+using CaptureMicrophoneNoiseFn = vector<unsigned char> (*)(unsigned int);
+CaptureMicrophoneNoiseFn g_capture_microphone_noise_fn = capture_microphone_noise;
 
 void on_language_changed(GtkComboBox* combo, gpointer);
 
@@ -168,7 +172,7 @@ void on_language_changed(GtkComboBox* combo, gpointer) {
     apply_ui_text();
 }
 
-vector<unsigned char> capture_microphone_noise(unsigned int seconds = 2) {
+vector<unsigned char> capture_microphone_noise(unsigned int seconds) {
     snd_pcm_t* handle;
     const char* device = "default";
 
@@ -228,6 +232,14 @@ vector<unsigned char> capture_microphone_noise(unsigned int seconds = 2) {
     );
 }
 
+void set_capture_microphone_noise_for_tests(CaptureMicrophoneNoiseFn capture_fn) {
+    g_capture_microphone_noise_fn = capture_fn != nullptr ? capture_fn : capture_microphone_noise;
+}
+
+void reset_capture_microphone_noise_for_tests() {
+    g_capture_microphone_noise_fn = capture_microphone_noise;
+}
+
 struct GenerationRequest {
     int length;
     PasswordOptions options;
@@ -276,7 +288,7 @@ void run_generation_worker(GenerationRequest request) {
     auto result = make_unique<GenerationResult>();
 
     try {
-        const vector<unsigned char> microphone_noise = capture_microphone_noise(2);
+        const vector<unsigned char> microphone_noise = g_capture_microphone_noise_fn(2);
         const vector<unsigned char> seed = sha256_bytes(microphone_noise);
 
         result->password = generate_password_from_seed(request.length, request.options, seed);
@@ -336,10 +348,7 @@ void on_copy_clicked(GtkWidget*, gpointer) {
     gtk_label_set_text(GTK_LABEL(status_label), g_text.copied_label);
 }
 
-int main(int argc, char* argv[]) {
-    gtk_init(&argc, &argv);
-    g_text = detect_ui_text();
-
+void build_application_ui() {
     g_set_prgname("mdp-generator");
 
     if (g_file_test(kLocalIconPath, G_FILE_TEST_EXISTS)) {
@@ -429,9 +438,41 @@ int main(int argc, char* argv[]) {
     g_signal_connect(generate_button, "clicked", G_CALLBACK(on_generate_clicked), NULL);
     g_signal_connect(copy_button, "clicked", G_CALLBACK(on_copy_clicked), NULL);
     g_signal_connect(window_widget, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+}
 
+void destroy_application_ui() {
+    if (window_widget != nullptr) {
+        gtk_widget_destroy(window_widget);
+    }
+
+    length_entry = nullptr;
+    lower_check = nullptr;
+    upper_check = nullptr;
+    digits_check = nullptr;
+    symbols_check = nullptr;
+    result_entry = nullptr;
+    status_label = nullptr;
+    window_widget = nullptr;
+    title_label = nullptr;
+    language_label = nullptr;
+    language_combo = nullptr;
+    options_label = nullptr;
+    generate_button = nullptr;
+    copy_button = nullptr;
+    recording_box = nullptr;
+    recording_spinner = nullptr;
+    recording_label = nullptr;
+}
+
+int run_application(int argc, char* argv[]) {
+    gtk_init(&argc, &argv);
+    g_text = detect_ui_text();
+    build_application_ui();
     gtk_widget_show_all(window_widget);
     gtk_main();
-
     return 0;
+}
+
+int main(int argc, char* argv[]) {
+    return run_application(argc, argv);
 }

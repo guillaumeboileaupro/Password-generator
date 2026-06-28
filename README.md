@@ -66,6 +66,12 @@ Run the non-UI tests:
 make test
 ```
 
+Run the GTK end-to-end UI tests:
+
+```bash
+make test-ui
+```
+
 Generate a coverage report for the core password logic:
 
 ```bash
@@ -270,6 +276,12 @@ Lancer les tests non-UI :
 
 ```bash
 make test
+```
+
+Lancer les tests end-to-end de l'interface GTK :
+
+```bash
+make test-ui
 ```
 
 Generer un rapport de couverture pour la logique coeur :

@@ -10,13 +10,17 @@ GTK_LIBS := $(shell pkg-config --libs gtk+-3.0)
 APP_SOURCES = mdp_gui.cpp password_core.cpp
 TEST_APP = password-core-tests
 TEST_SOURCES = tests/password_core_test.cpp password_core.cpp
+UI_TEST_APP = ui-e2e-tests
+UI_TEST_SOURCES = tests/ui_e2e_test.cpp password_core.cpp
 CORE_LIBS = -lssl -lcrypto
 COVERAGE_MIN ?= 95
 APP_CXXFLAGS += $(GTK_CFLAGS)
 APP_LDFLAGS += $(GTK_LIBS) -lasound $(CORE_LIBS)
 TEST_LDFLAGS += $(CORE_LIBS)
+UI_TEST_CXXFLAGS += $(GTK_CFLAGS)
+UI_TEST_LDFLAGS += $(GTK_LIBS) -lasound $(CORE_LIBS)
 
-.PHONY: all test coverage coverage-check install clean deb snap
+.PHONY: all test test-ui coverage coverage-check install clean deb snap
 
 all: $(APP)
 
@@ -26,8 +30,14 @@ $(APP): $(APP_SOURCES) password_core.h
 $(TEST_APP): $(TEST_SOURCES) password_core.h
 	$(CXX) $(CPPFLAGS) $(TEST_SOURCES) -o $(TEST_APP) $(TEST_LDFLAGS)
 
+$(UI_TEST_APP): $(UI_TEST_SOURCES) password_core.h
+	$(CXX) $(CPPFLAGS) $(UI_TEST_CXXFLAGS) $(UI_TEST_SOURCES) -o $(UI_TEST_APP) $(UI_TEST_LDFLAGS)
+
 test: $(TEST_APP)
 	./$(TEST_APP)
+
+test-ui: $(UI_TEST_APP)
+	xvfb-run -a ./$(UI_TEST_APP)
 
 coverage: CPPFLAGS += --coverage
 coverage: APP_CXXFLAGS += --coverage
@@ -52,7 +62,7 @@ install: all
 	install -m 0644 mdp-logo.png $(DESTDIR)$(ICONDIR)/mdp-logo.png
 
 clean:
-	rm -f $(APP) $(TEST_APP) *.gcda *.gcno *.gcov *-*.gcda *-*.gcno *-*.gcov tests/*.gcda tests/*.gcno tests/*.gcov
+	rm -f $(APP) $(TEST_APP) $(UI_TEST_APP) *.gcda *.gcno *.gcov *-*.gcda *-*.gcno *-*.gcov tests/*.gcda tests/*.gcno tests/*.gcov
 
 deb: all
 	./build_deb.sh
