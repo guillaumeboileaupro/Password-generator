@@ -1,0 +1,26 @@
+name: Test UI
+
+on:
+  push:
+    branches:
+      - main
+      - feat/**
+      - fix/**
+      - test/**
+  pull_request:
+
+jobs:
+  ui-e2e:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++ pkg-config libgtk-3-dev libasound2-dev libssl-dev xvfb
+
+      - name: Run UI end-to-end tests
+        run: make test-ui
