@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <atomic>
 
 #define main mdp_gui_app_main
 #include "../mdp_gui.cpp"
@@ -12,6 +13,9 @@
 using namespace std;
 
 namespace {
+
+atomic<bool> fake_capture_started{false};
+atomic<bool> fake_capture_can_finish{false};
 
 void fail(const string& message) {
     cerr << "TEST FAILURE: " << message << '\n';
@@ -50,6 +54,14 @@ bool wait_for(const function<bool()>& predicate, int timeout_ms = 3000) {
     return predicate();
 }
 
+void wait_until_capture_can_finish() {
+    const gint64 deadline = g_get_monotonic_time()+ 3000 * 1000;
+
+    while (!fake_capture_can_finish.load() && g_get_monotonic_time() < deadline) {
+        g_usleep(10000);
+    }
+}
+
 string label_text(GtkWidget* widget) {
     return gtk_label_get_text(GTK_LABEL(widget));
 }
@@ -69,15 +81,26 @@ void click(GtkWidget* widget) {
 
 vector<unsigned char> fake_capture_success(unsigned int seconds) {
     expect(seconds == 2, "microphone capture duration must stay at 2 seconds");
+
+    fake_capture_started.store(true);
+    wait_until_capture_can_finish();
+
     return vector<unsigned char>(512, 42);
 }
 
 vector<unsigned char> fake_capture_failure(unsigned int seconds) {
     expect(seconds == 2, "microphone capture duration must stay at 2 seconds");
+
+    fake_capture_started.store(true);
+    wait_until_capture_can_finish();
+
     throw runtime_error(g_text.microphone_capture_error);
 }
 
 void create_ui(bool french = false) {
+    fake_capture_started.store(false);
+    fake_capture_can_finish.store(false);
+
     g_is_french = french;
     g_text = french ? french_text() : english_text();
     build_application_ui();
@@ -150,10 +173,16 @@ void test_successful_generation_updates_ui_end_to_end() {
     gtk_entry_set_text(GTK_ENTRY(length_entry), "24");
     click(generate_button);
 
-    expect(!gtk_widget_get_sensitive(generate_button), "generate button must be disabled during capture");
-    expect(!gtk_widget_get_sensitive(copy_button), "copy button must be disabled during capture");
-    expect(gtk_widget_get_visible(recording_box), "recording box must be visible during capture");
+    expect(wait_for([] {
+        return fake_capture_started.load()
+            && !gtk_widget_get_sensitive(generate_button)
+            && !gtk_widget_get_sensitive(copy_button)
+            && gtk_widget_get_visible(recording_box);
+    }, 1000), "recording UI must be visible while capture is running");
+
     expect_equal(label_text(status_label), g_text.capturing_label, "status must show the capture message during capture");
+
+    fake_capture_can_finish.store(true);
 
     expect(wait_for([] {
         return gtk_widget_get_sensitive(generate_button) && entry_text(result_entry).size() == 24;

@@ -262,7 +262,9 @@ void set_recording_ui(bool is_recording) {
     gtk_widget_set_sensitive(language_combo, !is_recording);
 
     if (is_recording) {
-        gtk_widget_show_all(recording_box);
+        gtk_widget_show(recording_box);
+        gtk_widget_show(recording_spinner);
+        gtk_widget_show(recording_label);
         gtk_spinner_start(GTK_SPINNER(recording_spinner));
     } else {
         gtk_spinner_stop(GTK_SPINNER(recording_spinner));
@@ -346,6 +348,12 @@ void on_copy_clicked(GtkWidget*, gpointer) {
     gtk_clipboard_set_text(clipboard, password, -1);
 
     gtk_label_set_text(GTK_LABEL(status_label), g_text.copied_label);
+}
+
+void on_window_destroy(GtkWidget*, gpointer) {
+    if (gtk_main_level() > 0) {
+        gtk_main_quit();
+    }
 }
 
 void build_application_ui() {
@@ -437,7 +445,7 @@ void build_application_ui() {
     g_signal_connect(language_combo, "changed", G_CALLBACK(on_language_changed), NULL);
     g_signal_connect(generate_button, "clicked", G_CALLBACK(on_generate_clicked), NULL);
     g_signal_connect(copy_button, "clicked", G_CALLBACK(on_copy_clicked), NULL);
-    g_signal_connect(window_widget, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect(window_widget, "destroy", G_CALLBACK(on_window_destroy), NULL);
 }
 
 void destroy_application_ui() {
