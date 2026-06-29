@@ -141,7 +141,11 @@ UiText detect_ui_text() {
 }
 
 void apply_ui_text() {
-    g_set_application_name(g_text.app_name);
+    static bool application_name_set = false;
+    if (!application_name_set) {
+        g_set_application_name(g_text.app_name);
+        application_name_set = true;
+    }
     gtk_window_set_title(GTK_WINDOW(window_widget), g_text.window_title);
     gtk_label_set_text(GTK_LABEL(title_label), g_text.title);
     gtk_label_set_text(GTK_LABEL(language_label), g_text.language_label);
