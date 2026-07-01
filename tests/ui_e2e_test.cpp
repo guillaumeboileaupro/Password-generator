@@ -206,6 +206,14 @@ void test_generation_failure_restores_ui_state() {
     click(generate_button);
 
     expect(wait_for([] {
+        return fake_capture_started.load()
+            && !gtk_widget_get_sensitive(generate_button)
+            && gtk_widget_get_visible(recording_box);
+    }, 1000), "recording UI must be visible while failing capture is running");
+
+    fake_capture_can_finish.store(true);
+
+    expect(wait_for([] {
         return gtk_widget_get_sensitive(generate_button);
     }), "failing generation must re-enable the UI");
 
